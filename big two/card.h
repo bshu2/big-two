@@ -20,6 +20,7 @@ public:
 
 	int get_suit();
 	int get_value();
+	int get_comparable_value();
 	bool is_selected();
 
 	void set_selected(bool sel);

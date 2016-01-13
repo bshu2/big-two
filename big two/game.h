@@ -30,6 +30,7 @@ public:
 	void deal_hands();
 	int play_cards();
 	int ai_select_and_play_cards();
+	int ai_select_and_play_cards_turn1();
 
 	void print_cards();
 	void print_playing_field();

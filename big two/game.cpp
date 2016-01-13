@@ -154,6 +154,7 @@ int Game::play_cards()
 
 int Game::ai_select_and_play_cards()
 {
+	std::cout << "ai select cards...combo type = " << combo_type << "\n";
 	//select of cards if possible and push them to buffer and play them
 	if ((combo_type == NONE || combo_type == STRAIGHT) && checker.ai_select_straight(get_current_player()->get_hand()) != NULL)
 	{
@@ -210,6 +211,96 @@ int Game::ai_select_and_play_cards()
 		combo_type = PAIR;
 	}
 	else if ((combo_type == NONE || combo_type == SINGLE) && checker.ai_select_single(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "single found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_single(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = SINGLE;
+	}
+	else //invalid combination
+	{
+		return -1;
+	}
+
+	get_current_player()->print_playing_buffer();
+	std::cout << "Combination " << combo_type << " played\n";
+
+	clear_playing_field();//clear the playing field
+	playing_buffer_to_playing_field();//put cards into playing field
+
+	return combo_type;
+}
+
+int Game::ai_select_and_play_cards_turn1()
+{
+	std::cout << "ai select cards...combo type = " << combo_type << "\n";
+	//select of cards if possible and push them to buffer and play them
+	if ((combo_type == NONE || combo_type == STRAIGHT) && checker.ai_select_straight_turn1(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "straight found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_straight(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = STRAIGHT;
+	}
+	else if ((combo_type == NONE || combo_type == FULL_HOUSE) && checker.ai_select_full_house_turn1_type1(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "Full house t1 found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_full_house(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = FULL_HOUSE;
+	}
+	else if ((combo_type == NONE || combo_type == FULL_HOUSE) && checker.ai_select_full_house_turn1_type2(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "Full house t2 found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_full_house(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = FULL_HOUSE;
+	}
+	else if ((combo_type == NONE || combo_type == TWO_PAIR) && checker.ai_select_two_pair_turn1(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "2p found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_two_pair(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = TWO_PAIR;
+	}
+	else if ((combo_type == NONE || combo_type == FOUR_OF_A_KIND) && checker.ai_select_four_of_a_kind_turn1(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "4k found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_four_of_a_kind(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = FOUR_OF_A_KIND;
+	}
+	else if ((combo_type == NONE || combo_type == THREE_OF_A_KIND) && checker.ai_select_three_of_a_kind_turn1(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "3k found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_three_of_a_kind(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = THREE_OF_A_KIND;
+	}
+	else if ((combo_type == NONE || combo_type == PAIR) && checker.ai_select_pair_turn1(get_current_player()->get_hand()) != NULL)
+	{
+		std::cout << "p found\n";
+
+		get_current_player()->push_selected_cards_to_buffer();
+		if (checker.check_pair(get_current_player()->get_playing_buffer()) == NULL)
+			return -1;
+		combo_type = PAIR;
+	}
+	else if ((combo_type == NONE || combo_type == SINGLE) && checker.ai_select_single_turn1(get_current_player()->get_hand()) != NULL)
 	{
 		std::cout << "single found\n";
 

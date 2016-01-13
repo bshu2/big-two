@@ -73,6 +73,11 @@ int Card::get_value()
 	return value;
 }
 
+int Card::get_comparable_value()
+{
+	return (value + 13) % 16;
+}
+
 bool Card::is_selected()
 {
 	return selected;

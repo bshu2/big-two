@@ -266,7 +266,7 @@ int main(int argc, char* args[])
 
 								int pause;
 
-								if (game.ai_select_and_play_cards() == -1)
+								if (game.ai_select_and_play_cards_turn1() == -1)
 								{
 									std::cout << "no playable cards?? BUG";
 									std::cin >> pause;
@@ -484,11 +484,11 @@ int main(int argc, char* args[])
 					std::cout << "Player " << game.get_turn() << " has already won\n";
 					if (!game.get_current_player()->is_passed())//if the player is not passed, then pass
 					{
+						std::cout << "but was unpassed so passing now\n";
 						passed_players++;
 						game.get_player(game.get_turn())->set_passed(true);
 					}
 					game.increment_turn();
-					break;
 				}
 				else if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
@@ -716,7 +716,6 @@ int main(int argc, char* args[])
 				window.display();
 				break;
 			case CONTINUE_ROUND:
-
 				//display cards for the human player
 				player_hand_offset = 175 + (13 - game.get_player(0)->get_hand_size()) * 15;
 				for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
@@ -755,26 +754,24 @@ int main(int argc, char* args[])
 				//skip the player if he has already won 
 				if (game.get_current_player()->already_won())
 				{
-					
+					std::cout << "Player " << game.get_turn() << " has already won\n";
 					if (!game.get_current_player()->is_passed())//if the player is not passed, then pass
 					{
+						std::cout << "but was unpassed so passing now\n";
 						passed_players++;
 						game.get_player(game.get_turn())->set_passed(true);
 					}
 					
-					std::cout << "Player " << game.get_turn() << " has already won\n";
 					game.increment_turn();
-					break;
 				}
 				//skip the player if he already passed 
-				if (game.get_current_player()->is_passed())
+				else if (game.get_current_player()->is_passed())
 				{
 					std::cout << "Player " << game.get_turn() << " has already passed this round\n";
 					game.increment_turn();
-					break;
 				}
 
-				if (game.get_player(game.get_turn())->is_ai()) //logic for ai
+				else if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
 					//TODO ai stuff
 					while (window.pollEvent(event))
@@ -1008,7 +1005,7 @@ int main(int argc, char* args[])
 					playing_state = CONTINUE_ROUND;*/
 
 				}
-
+				
 				if (passed_players >= 3)
 				{
 					playing_state = END_ROUND;
@@ -1025,7 +1022,6 @@ int main(int argc, char* args[])
 				//increment the turn to the only unpassed player
 				while (game.get_current_player()->is_passed() ) //TODO address the case where player just emptied hand and everyone passed
 				{
-
 					game.increment_turn();
 				}
 				//increment the turn to a player that has not won yet
@@ -1087,13 +1083,14 @@ int main(int argc, char* args[])
 				}
 			}
 			
+			/*
 			std::cout << "winners: ";
 			for (int i = 0; i < 4; i++)
 			{
 				std::cout << game.get_finisher(i) << " ";
 			}
 			std::cout << "\n";
-
+			*/
 
 			//calculate message
 			for (int i = 0; i < 4; i++)

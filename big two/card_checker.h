@@ -34,7 +34,8 @@ public:
 	Card* ai_select_single(std::vector<Card>* cards);
 
 	//ai combination search functions including 3 of clubs
-	Card* ai_select_full_house_turn1(std::vector<Card>* cards);
+	Card* ai_select_full_house_turn1_type1(std::vector<Card>* cards);
+	Card* ai_select_full_house_turn1_type2(std::vector<Card>* cards);
 	Card* ai_select_straight_turn1(std::vector<Card>* cards);
 	Card* ai_select_two_pair_turn1(std::vector<Card>* cards);
 	Card* ai_select_four_of_a_kind_turn1(std::vector<Card>* cards);
@@ -48,6 +49,7 @@ protected:
 private:
 	Card top_card;
 	int select_lowest_unselected_pair(std::vector<Card>* cards);
+	int select_lowest_unselected_three_of_a_kind(std::vector<Card>* cards);
 };
 
 #endif
