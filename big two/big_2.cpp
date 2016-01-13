@@ -12,7 +12,6 @@
 
 enum GameState { START_SCREEN, PLAYING, END_SCREEN, EXIT };
 enum PlayingState { PREPARE_GAME, START_FIRST_ROUND, START_ROUND, CONTINUE_ROUND, END_ROUND, END_PLAY };
-//enum PlayerTurnState { AWAITING_INPUT, PLAYER_PASSED, CARD_SELECTED, PLAY_SELECTED_CARDS, END_TURN};
 
 int main(int argc, char* args[])
 {
@@ -21,32 +20,9 @@ int main(int argc, char* args[])
 	PlayingState playing_state = PREPARE_GAME;
 	int passed_players = 0;
 	int won_players = 0;
-	int player_hand_offset;
-	int playing_field_offset;
-
-	//CardSetType card_type = NONE;
+	int player_hand_offset, playing_field_offset, enemy_hand_offset;
 
 	game.init_game();
-
-	//game.get_deck()->print_deck();
-
-	
-	/*
-	game.get_deck()->print_deck();
-	game.get_deck()->shuffle_deck();
-	game.get_deck()->print_deck();
-	game.deal_hands();
-	game.get_deck()->print_deck();
-	for (int i = 0; i < 4; i++)
-	{
-		game.get_player(i)->print_hand();
-	}
-
-	while (true)
-	{
-
-	}
-	*/
 
 	// Create the main window
 	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
@@ -74,7 +50,7 @@ int main(int argc, char* args[])
 	exit_message.setPosition(565, 510);
 
 	//load card textures
-	sf::Texture card_sheet, smaller_card_sheet;
+	sf::Texture card_sheet, smaller_card_sheet, card_back;
 	sf::Image card_sheet_image;
 	if (!card_sheet_image.loadFromFile("card_spritesheet_small.jpg"))
 		return EXIT_FAILURE;
@@ -123,12 +99,53 @@ int main(int argc, char* args[])
 	}
 	if (!card_sheet.loadFromImage(card_sheet_image))
 		return EXIT_FAILURE;
-	if (!smaller_card_sheet.loadFromFile("card_spritesheet_smaller.jpg"))
+	//load card back textures
+	sf::Image cardbackimg;
+	if (!cardbackimg.loadFromFile("card_back_small.jpg"))
+		return EXIT_FAILURE;
+	cardbackimg.setPixel(0, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(1, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(2, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(3, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(1, 1, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(0, 1, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(0, 2, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(0, 3, sf::Color(0, 0, 0, 0));
+	//top right corner
+	cardbackimg.setPixel(89, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(88, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(87, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(86, 0, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(88, 1, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(89, 1, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(89, 2, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(89, 3, sf::Color(0, 0, 0, 0));
+	//bottom left corner
+	cardbackimg.setPixel(0, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(1, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(2, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(3, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(1, 124, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(0, 124, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(0, 123, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(0, 122, sf::Color(0, 0, 0, 0));
+	//bottom right corner
+	cardbackimg.setPixel(89, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(88, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(87, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(86, 125, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(88, 124, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(89, 124, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(89, 123, sf::Color(0, 0, 0, 0));
+	cardbackimg.setPixel(89, 122, sf::Color(0, 0, 0, 0));
+
+	if (!card_back.loadFromImage(cardbackimg))
 		return EXIT_FAILURE;
 
 	//card sprites
 	sf::Sprite playing_field_sprites[5];
 	sf::Sprite player_hand_sprites[13];
+	sf::Sprite enemy_hand_sprites[13];
 
 	//card and exit screen buttons
 	Button player_card_buttons[13];
@@ -171,41 +188,38 @@ int main(int argc, char* args[])
 		switch (game_state)
 		{
 		case START_SCREEN:
-			// wait for user input and process events
+			//wait for user input
 			while (window.pollEvent(event))
 			{
 				switch (event.type)
 				{
-					// window closed
 				case sf::Event::Closed:
-					game_state = EXIT;//window.close();
+					game_state = EXIT;
 					break;
 
 				case sf::Event::MouseButtonPressed:
 					if (event.mouseButton.button == sf::Mouse::Left)
 					{
-						game_state = PLAYING;//game_state = END_SCREEN;
+						game_state = PLAYING;
 					}
 					break;
 
-					// key pressed
 				case sf::Event::KeyPressed:
 					switch (event.key.code)
 					{
 					case sf::Keyboard::Escape:
-						game_state = EXIT;//window.close();
+						game_state = EXIT;
 						break;
 					default:
 						break;
 					}
 					break;
 
-					// we don't process other types of events
 				default:
 					break;
 				}
 			}
-			// Draw text
+			//draw text
 			window.draw(title);
 			window.draw(start_message);
 			window.display();
@@ -216,7 +230,7 @@ int main(int argc, char* args[])
 			switch (playing_state)
 			{
 			case PREPARE_GAME:
-				// prepare for a new game
+				//prepare for a new game
 				game.get_deck()->shuffle_deck();
 				game.deal_hands();
 				playing_state = START_FIRST_ROUND;
@@ -231,8 +245,33 @@ int main(int argc, char* args[])
 				{
 					player_hand_sprites[i].setTexture(card_sheet);
 					player_hand_sprites[i].setTextureRect(sf::IntRect((game.get_player(0)->get_hand()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_player(0)->get_hand()->at(i).get_suit()) * 126, 90, 126));
-					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 450 - 10* game.get_player(0)->get_hand()->at(i).is_selected());
+					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
 					window.draw(player_hand_sprites[i]);
+				}
+				//display cards for the computers
+				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(1)->get_hand_size() - 1))) / 2;//ai 1
+				for (int i = 0; i < game.get_player(1)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(90);
+					enemy_hand_sprites[i].setPosition(146, enemy_hand_offset + 20 * i);
+					window.draw(enemy_hand_sprites[i]);
+				}
+				enemy_hand_offset = (800 - (90 + 20 * (game.get_player(2)->get_hand_size() - 1))) / 2;//ai 2
+				for (int i = 0; i < game.get_player(2)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(0);
+					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 50);
+					window.draw(enemy_hand_sprites[i]);
+				}
+				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(3)->get_hand_size() - 1))) / 2;//ai 3
+				for (int i = 0; i < game.get_player(3)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(90);
+					enemy_hand_sprites[i].setPosition(780, enemy_hand_offset + 20 * i);
+					window.draw(enemy_hand_sprites[i]);
 				}
 				//display turn text
 				if (game.get_turn() == 0)
@@ -251,7 +290,6 @@ int main(int argc, char* args[])
 					{
 						switch (event.type)
 						{
-							// window closed
 						case sf::Event::Closed:
 							window.close();
 							break;
@@ -303,7 +341,6 @@ int main(int argc, char* args[])
 				}
 				else //logic for human player
 				{
-					//TODO await player input
 					if (!game.get_player(0)->get_hand()->at(0).is_selected())
 					{
 						game.get_current_player()->handle_card_click(0);
@@ -314,7 +351,6 @@ int main(int argc, char* args[])
 					{
 						switch (event.type)
 						{
-							// window closed
 						case sf::Event::Closed:
 							window.close();
 							break;
@@ -348,7 +384,7 @@ int main(int argc, char* args[])
 							}
 							break;
 
-							// key pressed
+							//key pressed
 						case sf::Event::KeyPressed:
 							switch (event.key.code)
 							{
@@ -377,7 +413,6 @@ int main(int argc, char* args[])
 							}
 							break;
 
-							// we don't process other types of events
 						default:
 							break;
 						}
@@ -454,17 +489,41 @@ int main(int argc, char* args[])
 				{
 					player_hand_sprites[i].setTexture(card_sheet);
 					player_hand_sprites[i].setTextureRect(sf::IntRect((game.get_player(0)->get_hand()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_player(0)->get_hand()->at(i).get_suit()) * 126, 90, 126));
-					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
+					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
 					window.draw(player_hand_sprites[i]);
 				}
+				//display cards for the computers
+				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(1)->get_hand_size() - 1))) / 2;//ai 1
+				for (int i = 0; i < game.get_player(1)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(90);
+					enemy_hand_sprites[i].setPosition(146, enemy_hand_offset + 20 * i);
+					window.draw(enemy_hand_sprites[i]);
+				}
+				enemy_hand_offset = (800 - (90 + 20 * (game.get_player(2)->get_hand_size() - 1))) / 2;//ai 2
+				for (int i = 0; i < game.get_player(2)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(0);
+					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 50);
+					window.draw(enemy_hand_sprites[i]);
+				}
+				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(3)->get_hand_size() - 1))) / 2;//ai 3
+				for (int i = 0; i < game.get_player(3)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(90);
+					enemy_hand_sprites[i].setPosition(780, enemy_hand_offset + 20 * i);
+					window.draw(enemy_hand_sprites[i]);
+				}
 				//display playing field
-				playing_field_offset = 295 + (5 - game.get_played_cards()->size()) * 15; //400 - (game.get_played_cards()->size())* 23;
+				playing_field_offset = (800 - (90 + (game.get_played_cards()->size() - 1) * 30)) / 2; 
 				for (int i = 0; i < (int)game.get_played_cards()->size(); i++)
 				{
-					//game.get_played_cards()->at(i).print_card();
-					playing_field_sprites[i].setTexture(card_sheet);//smaller_card_sheet
+					playing_field_sprites[i].setTexture(card_sheet);
 					playing_field_sprites[i].setTextureRect(sf::IntRect((game.get_played_cards()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_played_cards()->at(i).get_suit()) * 126, 90, 126));//45,62
-					playing_field_sprites[i].setPosition(playing_field_offset + 30 * i, 250);//45
+					playing_field_sprites[i].setPosition(playing_field_offset + 30 * i, 237);
 					window.draw(playing_field_sprites[i]);
 				}
 				//display turn text
@@ -492,12 +551,11 @@ int main(int argc, char* args[])
 				}
 				else if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
-					//TODO ai stuff
 					while (window.pollEvent(event))
 					{
 						switch (event.type)
 						{
-							// window closed
+							//window closed
 						case sf::Event::Closed:
 							window.close();
 							break;
@@ -570,14 +628,13 @@ int main(int argc, char* args[])
 				}
 				else //logic for human player
 				{
-					//TODO await player input
 					player_hand_offset = 175 + (13 - game.get_current_player()->get_hand_size()) * 15;
 
 					while (window.pollEvent(event))
 					{
 						switch (event.type)
 						{
-							// window closed
+							//window closed
 						case sf::Event::Closed:
 							window.close();
 							break;
@@ -601,7 +658,7 @@ int main(int argc, char* args[])
 							}
 							break;
 
-							// key pressed
+							//key pressed
 						case sf::Event::KeyPressed:
 							switch (event.key.code)
 							{
@@ -639,7 +696,6 @@ int main(int argc, char* args[])
 							}
 							break;
 
-							// we don't process other types of events
 						default:
 							break;
 						}
@@ -722,22 +778,43 @@ int main(int argc, char* args[])
 				{
 					player_hand_sprites[i].setTexture(card_sheet);
 					player_hand_sprites[i].setTextureRect(sf::IntRect((game.get_player(0)->get_hand()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_player(0)->get_hand()->at(i).get_suit()) * 126, 90, 126));
-					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
+					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
 					window.draw(player_hand_sprites[i]);
 				}
-
-				//std::cout << "pf size = " << game.get_played_cards()->size() << "\n";
+				//display cards for the computers
+				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(1)->get_hand_size() - 1))) / 2;//ai 1
+				for (int i = 0; i < game.get_player(1)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(90);
+					enemy_hand_sprites[i].setPosition(146, enemy_hand_offset + 20 * i);
+					window.draw(enemy_hand_sprites[i]);
+				}
+				enemy_hand_offset = (800 - (90 + 20 * (game.get_player(2)->get_hand_size() - 1))) / 2;//ai 2
+				for (int i = 0; i < game.get_player(2)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(0);
+					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 50);
+					window.draw(enemy_hand_sprites[i]);
+				}
+				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(3)->get_hand_size() - 1))) / 2;//ai 3
+				for (int i = 0; i < game.get_player(3)->get_hand_size(); i++)
+				{
+					enemy_hand_sprites[i].setTexture(card_back);
+					enemy_hand_sprites[i].setRotation(90);
+					enemy_hand_sprites[i].setPosition(780, enemy_hand_offset + 20 * i);
+					window.draw(enemy_hand_sprites[i]);
+				}
 				//display playing field
-				playing_field_offset = 295 + (5 - game.get_played_cards()->size()) * 15; //400 - (game.get_played_cards()->size())* 23;
+				playing_field_offset = (800 - (90 + (game.get_played_cards()->size()-1) * 30))/2;
 				for (int i = 0; i < (int)game.get_played_cards()->size(); i++)
 				{
-					//game.get_played_cards()->at(i).print_card();
-					playing_field_sprites[i].setTexture(card_sheet);//smaller_card_sheet
+					playing_field_sprites[i].setTexture(card_sheet);
 					playing_field_sprites[i].setTextureRect(sf::IntRect((game.get_played_cards()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_played_cards()->at(i).get_suit()) * 126, 90, 126));//45,62
-					playing_field_sprites[i].setPosition(playing_field_offset + 30 * i, 250);//45
+					playing_field_sprites[i].setPosition(playing_field_offset + 30 * i, 237);
 					window.draw(playing_field_sprites[i]);
 				}
-				//std::cout << "\n";
 
 				//display turn text
 				if (game.get_turn() == 0)
@@ -773,12 +850,11 @@ int main(int argc, char* args[])
 
 				else if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
-					//TODO ai stuff
 					while (window.pollEvent(event))
 					{
 						switch (event.type)
 						{
-							// window closed
+							//window closed
 						case sf::Event::Closed:
 							window.close();
 							break;
@@ -852,7 +928,6 @@ int main(int argc, char* args[])
 				}
 				else //logic for human player
 				{
-					//TODO await player input
 
 					player_hand_offset = 175 + (13 - game.get_player(0)->get_hand_size()) * 15;
 
@@ -860,7 +935,7 @@ int main(int argc, char* args[])
 					{
 						switch (event.type)
 						{
-							// window closed
+							//window closed
 						case sf::Event::Closed:
 							window.close();
 							break;
@@ -884,7 +959,7 @@ int main(int argc, char* args[])
 							}
 							break;
 
-							// key pressed
+							//key pressed
 						case sf::Event::KeyPressed:
 							switch (event.key.code)
 							{
@@ -929,7 +1004,6 @@ int main(int argc, char* args[])
 							}
 							break;
 
-							// we don't process other types of events
 						default:
 							break;
 						}
@@ -1020,7 +1094,7 @@ int main(int argc, char* args[])
 				std::cout << "END_ROUND\n";
 				
 				//increment the turn to the only unpassed player
-				while (game.get_current_player()->is_passed() ) //TODO address the case where player just emptied hand and everyone passed
+				while (game.get_current_player()->is_passed() ) 
 				{
 					game.increment_turn();
 				}
@@ -1062,7 +1136,7 @@ int main(int argc, char* args[])
 			{
 				switch (event.type)
 				{
-					// window closed
+					//window closed
 				case sf::Event::Closed:
 					window.close();
 					break;
@@ -1082,17 +1156,8 @@ int main(int argc, char* args[])
 					}
 				}
 			}
-			
-			/*
-			std::cout << "winners: ";
-			for (int i = 0; i < 4; i++)
-			{
-				std::cout << game.get_finisher(i) << " ";
-			}
-			std::cout << "\n";
-			*/
 
-			//calculate message
+			//calculate end game message
 			for (int i = 0; i < 4; i++)
 			{
 				if (game.get_finisher(i) == 0)
@@ -1118,22 +1183,6 @@ int main(int argc, char* args[])
 			window.draw(chara);
 			window.display();
 
-
-
-			/*std::cout << "Enter 0 to play again, 1 to exit";
-			std::cin >> action;
-			if (action == 0)
-			{
-				game_state = START_SCREEN;
-			}
-			else
-			{
-				game.reset_game();
-				game_state = END_SCREEN;
-			}*/
-			//TODO display end game screen with "play again" and "quit" options (and score?)
-			// "play again" moves to START_SCREEN
-			// "quit" moves to EXIT
 			break;
 		case EXIT:
 			game.close_game();
@@ -1142,8 +1191,6 @@ int main(int argc, char* args[])
 			break;
 		}
 
-		//display the window
-		//window.display();
 	}
 
 	return 0;
