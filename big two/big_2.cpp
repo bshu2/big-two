@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
 
 #include "game.h"
 #include "deck.h"
@@ -15,17 +16,20 @@ enum PlayingState { PREPARE_GAME, START_FIRST_ROUND, START_ROUND, CONTINUE_ROUND
 
 int main(int argc, char* args[])
 {
+
+
 	Game game;
 	GameState game_state = START_SCREEN;
 	PlayingState playing_state = PREPARE_GAME;
-	int passed_players = 0;
-	int won_players = 0;
+	int passed_players = 0, won_players = 0;
+	int enemy_turn_timer = 0;
 	int player_hand_offset, playing_field_offset, enemy_hand_offset;
 
 	game.init_game();
 
 	// Create the main window
-	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+	sf::RenderWindow window(sf::VideoMode(800, 600), "Big 2");
+	window.setFramerateLimit(60);
 
 	// load font
 	sf::Font font;
@@ -170,12 +174,33 @@ int main(int argc, char* args[])
 	sf::Sprite chara(chara_texture);
 	chara.setPosition(375,300);
 
-
-
+	//load music and set flags
+	sf::Music music;
+	if (!music.openFromFile("music.ogg"))
+		return EXIT_FAILURE;
+	music.setVolume(60);
+	music.setLoop(true);
+	sf::Music end_screen_music;
+	if (!end_screen_music.openFromFile("end screen music.ogg"))
+		return EXIT_FAILURE;
+	end_screen_music.setVolume(60);
+	end_screen_music.setLoop(false);
+	//load sounds
+	sf::SoundBuffer applause_buf;
+	applause_buf.loadFromFile("applause.wav");
+	sf::Sound applause;
+	applause.setBuffer(applause_buf);
+	sf::SoundBuffer card_sound_buf;
+	card_sound_buf.loadFromFile("card.wav");
+	sf::Sound card_sound;
+	card_sound.setBuffer(card_sound_buf);
+	
 
 
 
 	sf::Event event;
+
+	music.play();
 
 	while (window.isOpen())
 	{
@@ -207,8 +232,8 @@ int main(int argc, char* args[])
 				case sf::Event::KeyPressed:
 					switch (event.key.code)
 					{
-					case sf::Keyboard::Escape:
-						game_state = EXIT;
+					case sf::Keyboard::Space:
+						game_state = PLAYING;
 						break;
 					default:
 						break;
@@ -286,6 +311,25 @@ int main(int argc, char* args[])
 
 				if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
+					if (enemy_turn_timer++ == 120)
+					{
+						std::cout << "\nPlayer " << game.get_turn() << " starts first\n";
+						std::cout << "START_FIRST_ROUND\n";
+						game.print_playing_field();
+						game.get_current_player()->print_hand();
+
+						int pause;
+
+						if (game.ai_select_and_play_cards_turn1() == -1)
+						{
+							std::cout << "no playable cards?? BUG";
+							std::cin >> pause;
+						}
+						enemy_turn_timer = 0;
+						game.increment_turn();
+						playing_state = CONTINUE_ROUND;
+						card_sound.play();
+					}
 					while (window.pollEvent(event))
 					{
 						switch (event.type)
@@ -309,9 +353,10 @@ int main(int argc, char* args[])
 									std::cout << "no playable cards?? BUG";
 									std::cin >> pause;
 								}
-
+								enemy_turn_timer = 0;
 								game.increment_turn();
 								playing_state = CONTINUE_ROUND;
+								card_sound.play();
 							}
 							break;
 						default:
@@ -359,12 +404,12 @@ int main(int argc, char* args[])
 							if (event.mouseButton.button == sf::Mouse::Left)
 							{
 								
-								for (int i = 0; i < game.get_current_player()->get_hand_size(); i++)
+								for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
 								{
-									if (i == game.get_current_player()->get_hand_size() - 1)
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
+									if (i == game.get_player(0)->get_hand_size() - 1)
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
 									else
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
 									if (player_card_buttons[i].handle_event(&event))
 									{
 										if (i == 0)
@@ -407,6 +452,7 @@ int main(int argc, char* args[])
 								//increment turn
 								game.increment_turn();
 								playing_state = CONTINUE_ROUND;
+								card_sound.play();
 								break;
 							default:
 								break;
@@ -551,6 +597,32 @@ int main(int argc, char* args[])
 				}
 				else if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
+					if (enemy_turn_timer++ == 120)
+					{
+						std::cout << "\nPlayer " << game.get_turn() << "'s turn\n";
+						std::cout << "START_ROUND\n";
+						game.print_playing_field();
+						game.get_current_player()->print_hand();
+
+						int pause;
+
+						if (game.ai_select_and_play_cards() == -1)
+						{
+							std::cout << "no playable cards?? BUG";
+							std::cin >> pause;
+						}
+						//if no cards left, mark player as won
+						if (game.get_current_player()->get_hand_size() == 0)
+						{
+							std::cout << "Player " << game.get_turn() << " won!";
+							game.add_winner();
+							won_players++;
+						}
+						enemy_turn_timer = 0;
+						game.increment_turn();
+						playing_state = CONTINUE_ROUND;
+						card_sound.play();
+					}
 					while (window.pollEvent(event))
 					{
 						switch (event.type)
@@ -582,9 +654,10 @@ int main(int argc, char* args[])
 									game.add_winner();
 									won_players++;
 								}
+								enemy_turn_timer = 0;
 								game.increment_turn();
 								playing_state = CONTINUE_ROUND;
-								
+								card_sound.play();
 								
 							}
 							break;
@@ -642,12 +715,12 @@ int main(int argc, char* args[])
 						case sf::Event::MouseButtonPressed:
 							if (event.mouseButton.button == sf::Mouse::Left)
 							{
-								for (int i = 0; i < game.get_current_player()->get_hand_size(); i++)
+								for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
 								{
-									if (i == game.get_current_player()->get_hand_size() - 1)
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
+									if (i == game.get_player(0)->get_hand_size() - 1)
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
 									else
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
 									if (player_card_buttons[i].handle_event(&event))
 									{
 										//std::cout << "index " << i << " selected\n";
@@ -690,6 +763,7 @@ int main(int argc, char* args[])
 								//increment turn
 								game.increment_turn();
 								playing_state = CONTINUE_ROUND;
+								card_sound.play();
 								break;
 							default:
 								break;
@@ -765,7 +839,7 @@ int main(int argc, char* args[])
 				{
 					playing_state = END_ROUND;
 				}
-				if (won_players == 4)
+				if (won_players == 3)
 				{
 					playing_state = END_PLAY;
 				}
@@ -850,6 +924,33 @@ int main(int argc, char* args[])
 
 				else if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
+					if (enemy_turn_timer++ == 120)
+					{
+						std::cout << "\nPlayer " << game.get_turn() << "'s turn\n";
+						std::cout << "CONTINUE_ROUND\n";
+						game.print_playing_field();
+						game.get_current_player()->print_hand();
+
+						if (game.ai_select_and_play_cards() == -1)
+						{
+							std::cout << "Player " << game.get_turn() << " passed\n";
+							passed_players++;
+							game.get_current_player()->set_passed(true);
+							std::cout << passed_players << " player(s) have passed\n";
+							//pass if cant play anything
+						}
+						//if no cards left, mark player as won
+						if (game.get_current_player()->get_hand_size() == 0)
+						{
+							std::cout << "Player " << game.get_turn() << " won!";
+							game.add_winner();
+							won_players++;
+						}
+						enemy_turn_timer = 0;
+						game.increment_turn();
+						playing_state = CONTINUE_ROUND;
+						card_sound.play();
+					}
 					while (window.pollEvent(event))
 					{
 						switch (event.type)
@@ -882,8 +983,10 @@ int main(int argc, char* args[])
 									game.add_winner();
 									won_players++;
 								}
+								enemy_turn_timer = 0;
 								game.increment_turn();
 								playing_state = CONTINUE_ROUND;
+								card_sound.play();
 							}
 							break;
 						default:
@@ -943,12 +1046,12 @@ int main(int argc, char* args[])
 						case sf::Event::MouseButtonPressed:
 							if (event.mouseButton.button == sf::Mouse::Left)
 							{
-								for (int i = 0; i < game.get_current_player()->get_hand_size(); i++)
+								for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
 								{
-									if (i == game.get_current_player()->get_hand_size() - 1)
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
+									if (i == game.get_player(0)->get_hand_size() - 1)
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
 									else
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 450 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
 									if (player_card_buttons[i].handle_event(&event))
 									{
 										//std::cout << "index " << i << " selected\n";
@@ -967,6 +1070,14 @@ int main(int argc, char* args[])
 								std::cout << "Player " << game.get_turn() << " passed\n";
 								passed_players++;
 								game.get_current_player()->set_passed(true);
+								//deselect all cards
+								for (int i = 0; i < game.get_current_player()->get_hand()->size(); i++)
+								{
+									if (game.get_current_player()->get_hand()->at(i).is_selected())
+									{
+										game.get_current_player()->get_hand()->at(i).set_selected(false);
+									}
+								}
 								game.increment_turn();
 								std::cout << passed_players << " player(s) have passed\n";
 								break;
@@ -998,6 +1109,7 @@ int main(int argc, char* args[])
 								//increment turn
 								game.increment_turn();
 								playing_state = CONTINUE_ROUND;
+								card_sound.play();
 								break;
 							default:
 								break;
@@ -1084,7 +1196,7 @@ int main(int argc, char* args[])
 				{
 					playing_state = END_ROUND;
 				}
-				if (won_players == 4)
+				if (won_players == 3)
 				{
 					playing_state = END_PLAY;
 				}
@@ -1118,6 +1230,12 @@ int main(int argc, char* args[])
 				std::cout << "END_PLAY\n";
 				passed_players = 0;
 				won_players = 0;
+				//increment the turn to the only player that has not won yet
+				while (game.get_current_player()->already_won())
+				{
+					game.increment_turn();
+				}
+				game.add_winner();//add that player as 4th place winner
 				//set all players to unpassed and unfinished
 				for (int i = 0; i < 4; i++)
 				{
@@ -1127,6 +1245,9 @@ int main(int argc, char* args[])
 
 				playing_state = PREPARE_GAME;
 				game_state = END_SCREEN;
+				music.stop();
+				end_screen_music.play();
+				applause.play();
 
 				break;
 			}
@@ -1148,6 +1269,8 @@ int main(int argc, char* args[])
 						{
 							game.reset_game();
 							game_state = START_SCREEN;
+							end_screen_music.stop();
+							music.play();
 						}
 						else if (exit_button.handle_event(&event))
 						{

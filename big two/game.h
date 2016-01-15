@@ -59,6 +59,5 @@ private:
 
 };
 
-
 #endif
 
