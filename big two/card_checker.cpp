@@ -21,7 +21,7 @@ int CardChecker::sort_by_value(std::vector<Card> cards)
 	for (int i = 0; i < cards.size(); i++)
 	{
 		j = i;
-		while (j > 0 && cards[j].get_value() < cards[j - 1].get_value())
+		while (j > 0 && cards[j].get_comparable_value() < cards[j - 1].get_comparable_value())
 		{
 			temp = cards[j];
 			cards[j] = cards[j - 1];
@@ -57,12 +57,12 @@ Card* CardChecker::check_full_house(std::vector<Card>* cards)
 		return NULL;
 	sort_by_value_and_suit(cards);
 	
-	if (cards->at(0).get_value() != cards->at(1).get_value() || cards->at(3).get_value() != cards->at(4).get_value() || (cards->at(1).get_value() != cards->at(2).get_value() && cards->at(2).get_value() != cards->at(3).get_value()))
+	if (cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value() || cards->at(3).get_comparable_value() != cards->at(4).get_comparable_value() || (cards->at(1).get_comparable_value() != cards->at(2).get_comparable_value() && cards->at(2).get_comparable_value() != cards->at(3).get_comparable_value()))
 		return NULL;
 
 	
 	//reorder if needed to get the triple in front of the pair
-	if (cards->at(2).get_value() == cards->at(3).get_value())
+	if (cards->at(2).get_comparable_value() == cards->at(3).get_comparable_value())
 	{
 		cards->push_back(cards->at(0));
 		cards->push_back(cards->at(1));
@@ -103,7 +103,7 @@ Card* CardChecker::check_two_pair(std::vector<Card>* cards)
 	if (cards->size() != 4)
 		return NULL;
 	sort_by_value_and_suit(cards);
-	if (cards->at(0).get_value() != cards->at(1).get_value() || cards->at(1).get_value() == cards->at(2).get_value() || cards->at(2).get_value() != cards->at(3).get_value())
+	if (cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value() || cards->at(1).get_comparable_value() == cards->at(2).get_comparable_value() || cards->at(2).get_comparable_value() != cards->at(3).get_comparable_value())
 		return NULL;
 	if (top_card > cards->at(3))
 		return NULL;
@@ -113,7 +113,7 @@ Card* CardChecker::check_two_pair(std::vector<Card>* cards)
 
 Card* CardChecker::check_four_of_a_kind(std::vector<Card>* cards)
 {
-	if (cards->size() != 4 || cards->at(0).get_value() != cards->at(1).get_value() || cards->at(1).get_value() != cards->at(2).get_value() || cards->at(2).get_value() != cards->at(3).get_value())
+	if (cards->size() != 4 || cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value() || cards->at(1).get_comparable_value() != cards->at(2).get_comparable_value() || cards->at(2).get_comparable_value() != cards->at(3).get_comparable_value())
 		return NULL;
 	if (top_card > cards->at(3))
 		return NULL;
@@ -123,7 +123,7 @@ Card* CardChecker::check_four_of_a_kind(std::vector<Card>* cards)
 
 Card* CardChecker::check_three_of_a_kind(std::vector<Card>* cards)
 {
-	if (cards->size() != 3 || cards->at(0).get_value() != cards->at(1).get_value() || cards->at(1).get_value() != cards->at(2).get_value())
+	if (cards->size() != 3 || cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value() || cards->at(1).get_comparable_value() != cards->at(2).get_comparable_value())
 		return NULL;
 	if (top_card > cards->at(2))
 		return NULL;
@@ -133,7 +133,7 @@ Card* CardChecker::check_three_of_a_kind(std::vector<Card>* cards)
 
 Card* CardChecker::check_pair(std::vector<Card>* cards)
 {
-	if (cards->size() != 2 || cards->at(0).get_value() != cards->at(1).get_value())
+	if (cards->size() != 2 || cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value())
 		return NULL;
 	if (top_card > cards->at(1))
 		return NULL;
@@ -144,7 +144,7 @@ Card* CardChecker::check_pair(std::vector<Card>* cards)
 Card* CardChecker::check_single(std::vector<Card>* cards)
 {
 	//std::cout << "single\n";
-	//std::cout << "card = " << cards->at(0).get_value() << " of " << cards->at(0).get_suit();
+	//std::cout << "card = " << cards->at(0).get_comparable_value() << " of " << cards->at(0).get_suit();
 
 	if (cards->size() != 1)
 	{
@@ -205,49 +205,49 @@ Card* CardChecker::ai_select_straight(std::vector<Card>* cards)
 		off4 = 1;
 		if (i + off1 >= (int)cards->size())
 			return NULL;
-		while (i + 1 < (int)cards->size() && cards->at(i).get_value() == cards->at(i + off1).get_value())
+		while (i + 1 < (int)cards->size() && cards->at(i).get_comparable_value() == cards->at(i + off1).get_comparable_value())
 		{
 			off1++;
 			if (i + off1 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(i).get_value() != cards->at(i + off1).get_value() - 1)
+		if (cards->at(i).get_comparable_value() != cards->at(i + off1).get_comparable_value() - 1)
 		{
 			continue;
 		}
 		if (i + off1 + off2 >= (int)cards->size())
 			return NULL;
-		while (i + off1 + 1 < (int)cards->size() && cards->at(i + off1).get_value() == cards->at(i + off1 + off2).get_value())
+		while (i + off1 + 1 < (int)cards->size() && cards->at(i + off1).get_comparable_value() == cards->at(i + off1 + off2).get_comparable_value())
 		{
 			off2++;
 			if (i + off1 + off2>= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(i + off1).get_value() != cards->at(i + off1 + off2).get_value() - 1)
+		if (cards->at(i + off1).get_comparable_value() != cards->at(i + off1 + off2).get_comparable_value() - 1)
 		{
 			continue;
 		}
 		if (i + off1 + off2 + off3 >= (int)cards->size())
 			return NULL;
-		while (i + off1 + off2 + 1 < (int)cards->size() && cards->at(i + off1 + off2).get_value() == cards->at(i + off1 + off2 + off3).get_value())
+		while (i + off1 + off2 + 1 < (int)cards->size() && cards->at(i + off1 + off2).get_comparable_value() == cards->at(i + off1 + off2 + off3).get_comparable_value())
 		{
 			off3++;
 			if (i + off1 + off2 + off3 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(i + off1 + off2).get_value() != cards->at(i + off1 + off2 + off3).get_value() - 1)
+		if (cards->at(i + off1 + off2).get_comparable_value() != cards->at(i + off1 + off2 + off3).get_comparable_value() - 1)
 		{
 			continue;
 		}
 		if (i + off1 + off2 + off3 + off4 >= (int)cards->size())
 			return NULL;
-		while (i + off1 + off2 + off3 + 1 < (int)cards->size() && cards->at(i + off1 + off2 + off3).get_value() == cards->at(i + off1 + off2 + off3 + off4).get_value())
+		while (i + off1 + off2 + off3 + 1 < (int)cards->size() && cards->at(i + off1 + off2 + off3).get_comparable_value() == cards->at(i + off1 + off2 + off3 + off4).get_comparable_value())
 		{
 			off4++;
 			if (i + off1 + off2 + off3 + off4 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(i + off1 + off2 + off3).get_value() != cards->at(i + off1 + off2 + off3 + off4).get_value() - 1)
+		if (cards->at(i + off1 + off2 + off3).get_comparable_value() != cards->at(i + off1 + off2 + off3 + off4).get_comparable_value() - 1)
 		{
 			continue;
 		}
@@ -297,8 +297,8 @@ Card* CardChecker::ai_select_four_of_a_kind(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	for (int i = 0; i < (int)cards->size() - 3; i++)
 	{
-		if (cards->at(i).get_value() == cards->at(i + 1).get_value() && cards->at(i + 1).get_value() == cards->at(i + 2).get_value() 
-			&& cards->at(i + 2).get_value() == cards->at(i + 3).get_value() && cards->at(i + 3) > top_card)
+		if (cards->at(i).get_comparable_value() == cards->at(i + 1).get_comparable_value() && cards->at(i + 1).get_comparable_value() == cards->at(i + 2).get_comparable_value() 
+			&& cards->at(i + 2).get_comparable_value() == cards->at(i + 3).get_comparable_value() && cards->at(i + 3) > top_card)
 		{
 			//top_card = cards->at(i + 3);
 			cards->at(i).set_selected(true);
@@ -318,7 +318,7 @@ Card* CardChecker::ai_select_three_of_a_kind(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	for (int i = 0; i < (int)cards->size() - 2; i++)
 	{
-		if (cards->at(i).get_value() == cards->at(i + 1).get_value() && cards->at(i + 1).get_value() == cards->at(i + 2).get_value() && cards->at(i + 2) > top_card)
+		if (cards->at(i).get_comparable_value() == cards->at(i + 1).get_comparable_value() && cards->at(i + 1).get_comparable_value() == cards->at(i + 2).get_comparable_value() && cards->at(i + 2) > top_card)
 		{
 			//top_card = cards->at(i + 2);
 			cards->at(i).set_selected(true);
@@ -337,7 +337,7 @@ Card* CardChecker::ai_select_pair(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	for (int i = 0; i < (int)cards->size() - 1; i++)
 	{
-		if (cards->at(i).get_value() == cards->at(i + 1).get_value() && cards->at(i + 1) > top_card)
+		if (cards->at(i).get_comparable_value() == cards->at(i + 1).get_comparable_value() && cards->at(i + 1) > top_card)
 		{
 			//top_card = cards->at(i + 1);
 			cards->at(i).set_selected(true);
@@ -444,49 +444,49 @@ Card* CardChecker::ai_select_straight_turn1(std::vector<Card>* cards)
 	int off1 = 1, off2 = 1, off3 = 1, off4 = 1;
 		if (off1 >= (int)cards->size())
 			return NULL;
-		while (1 < (int)cards->size() && cards->at(0).get_value() == cards->at(off1).get_value())
+		while (1 < (int)cards->size() && cards->at(0).get_comparable_value() == cards->at(off1).get_comparable_value())
 		{
 			off1++;
 			if (off1 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(0).get_value() != cards->at(off1).get_value() - 1)
+		if (cards->at(0).get_comparable_value() != cards->at(off1).get_comparable_value() - 1)
 		{
 			return NULL;
 		}
 		if (off1 + off2 >= (int)cards->size())
 			return NULL;
-		while (off1 + 1 < (int)cards->size() && cards->at(off1).get_value() == cards->at(off1 + off2).get_value())
+		while (off1 + 1 < (int)cards->size() && cards->at(off1).get_comparable_value() == cards->at(off1 + off2).get_comparable_value())
 		{
 			off2++;
 			if (off1 + off2 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(off1).get_value() != cards->at(off1 + off2).get_value() - 1)
+		if (cards->at(off1).get_comparable_value() != cards->at(off1 + off2).get_comparable_value() - 1)
 		{
 			return NULL;
 		}
 		if (off1 + off2 + off3 >= (int)cards->size())
 			return NULL;
-		while (off1 + off2 + 1 < (int)cards->size() && cards->at(off1 + off2).get_value() == cards->at(off1 + off2 + off3).get_value())
+		while (off1 + off2 + 1 < (int)cards->size() && cards->at(off1 + off2).get_comparable_value() == cards->at(off1 + off2 + off3).get_comparable_value())
 		{
 			off3++;
 			if (off1 + off2 + off3 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(off1 + off2).get_value() != cards->at(off1 + off2 + off3).get_value() - 1)
+		if (cards->at(off1 + off2).get_comparable_value() != cards->at(off1 + off2 + off3).get_comparable_value() - 1)
 		{
 			return NULL;
 		}
 		if (off1 + off2 + off3 + off4 >= (int)cards->size())
 			return NULL;
-		while (off1 + off2 + off3 + 1 < (int)cards->size() && cards->at(off1 + off2 + off3).get_value() == cards->at(off1 + off2 + off3 + off4).get_value())
+		while (off1 + off2 + off3 + 1 < (int)cards->size() && cards->at(off1 + off2 + off3).get_comparable_value() == cards->at(off1 + off2 + off3 + off4).get_comparable_value())
 		{
 			off4++;
 			if (off1 + off2 + off3 + off4 >= (int)cards->size())
 				return NULL;
 		}
-		if (cards->at(off1 + off2 + off3).get_value() != cards->at(off1 + off2 + off3 + off4).get_value() - 1)
+		if (cards->at(off1 + off2 + off3).get_comparable_value() != cards->at(off1 + off2 + off3 + off4).get_comparable_value() - 1)
 		{
 			return NULL;
 		}
@@ -536,7 +536,7 @@ Card* CardChecker::ai_select_four_of_a_kind_turn1(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	if (cards->at(0) != Card(0, 3))
 		return NULL;
-	if (cards->at(0).get_value() != cards->at(1).get_value() || cards->at(1).get_value() != cards->at(2).get_value() || cards->at(2).get_value() != cards->at(3).get_value())
+	if (cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value() || cards->at(1).get_comparable_value() != cards->at(2).get_comparable_value() || cards->at(2).get_comparable_value() != cards->at(3).get_comparable_value())
 		return NULL;
 	cards->at(0).set_selected(true);
 	cards->at(1).set_selected(true);
@@ -553,7 +553,7 @@ Card* CardChecker::ai_select_three_of_a_kind_turn1(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	if (cards->at(0) != Card(0, 3))
 		return NULL;
-	if (cards->at(0).get_value() != cards->at(1).get_value() || cards->at(1).get_value() != cards->at(2).get_value())
+	if (cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value() || cards->at(1).get_comparable_value() != cards->at(2).get_comparable_value())
 		return NULL;
 	cards->at(0).set_selected(true);
 	cards->at(1).set_selected(true);
@@ -569,7 +569,7 @@ Card* CardChecker::ai_select_pair_turn1(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	if (cards->at(0) != Card(0, 3))
 		return NULL;
-	if (cards->at(0).get_value() != cards->at(1).get_value())
+	if (cards->at(0).get_comparable_value() != cards->at(1).get_comparable_value())
 		return NULL;
 	cards->at(0).set_selected(true);
 	cards->at(1).set_selected(true);
@@ -601,7 +601,7 @@ int CardChecker::select_lowest_unselected_pair(std::vector<Card>* cards)
 	sort_by_value_and_suit(cards);
 	for (int i = 0; i < (int)cards->size() - 1; i++)
 	{
-		if (cards->at(i).get_value() == cards->at(i + 1).get_value() && !cards->at(i).is_selected() && !cards->at(i + 1).is_selected())
+		if (cards->at(i).get_comparable_value() == cards->at(i + 1).get_comparable_value() && !cards->at(i).is_selected() && !cards->at(i + 1).is_selected())
 		{
 			cards->at(i).set_selected(true);
 			cards->at(i + 1).set_selected(true);
@@ -616,7 +616,7 @@ int CardChecker::select_lowest_unselected_three_of_a_kind(std::vector<Card>* car
 	sort_by_value_and_suit(cards);
 	for (int i = 0; i < (int)cards->size() - 2; i++)
 	{
-		if (cards->at(i).get_value() == cards->at(i + 1).get_value() && cards->at(i + 1).get_value() == cards->at(i + 2).get_value() && !cards->at(i).is_selected() && !cards->at(i + 1).is_selected() && !cards->at(i + 2).is_selected())
+		if (cards->at(i).get_comparable_value() == cards->at(i + 1).get_comparable_value() && cards->at(i + 1).get_comparable_value() == cards->at(i + 2).get_comparable_value() && !cards->at(i).is_selected() && !cards->at(i + 1).is_selected() && !cards->at(i + 2).is_selected())
 		{
 			cards->at(i).set_selected(true);
 			cards->at(i + 1).set_selected(true);

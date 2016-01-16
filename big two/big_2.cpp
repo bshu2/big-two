@@ -185,6 +185,7 @@ int main(int argc, char* args[])
 		return EXIT_FAILURE;
 	end_screen_music.setVolume(60);
 	end_screen_music.setLoop(false);
+
 	//load sounds
 	sf::SoundBuffer applause_buf;
 	applause_buf.loadFromFile("applause.wav");
@@ -195,7 +196,23 @@ int main(int argc, char* args[])
 	sf::Sound card_sound;
 	card_sound.setBuffer(card_sound_buf);
 	
-
+	//PASS and PLAY button stuff
+	Button pass_button(40, 500, 100, 50);
+	Button play_button(660, 500, 100, 50);
+	sf::RectangleShape pass_rect(sf::Vector2f(100, 50));
+	pass_rect.setOutlineColor(sf::Color(255, 255, 255));
+	pass_rect.setOutlineThickness(2.0);
+	pass_rect.setFillColor(sf::Color(0, 0, 0));
+	pass_rect.setPosition(40, 500);
+	sf::RectangleShape play_rect(sf::Vector2f(100, 50));
+	play_rect.setOutlineColor(sf::Color(255, 255, 255));
+	play_rect.setOutlineThickness(2.0);
+	play_rect.setFillColor(sf::Color(0, 0, 0));
+	play_rect.setPosition(660, 500);
+	sf::Text pass_message("PASS", font, 25);
+	pass_message.setPosition(55, 510);
+	sf::Text play_message("PLAY", font, 25);
+	play_message.setPosition(675, 510);
 
 
 	sf::Event event;
@@ -270,7 +287,7 @@ int main(int argc, char* args[])
 				{
 					player_hand_sprites[i].setTexture(card_sheet);
 					player_hand_sprites[i].setTextureRect(sf::IntRect((game.get_player(0)->get_hand()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_player(0)->get_hand()->at(i).get_suit()) * 126, 90, 126));
-					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
+					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
 					window.draw(player_hand_sprites[i]);
 				}
 				//display cards for the computers
@@ -287,7 +304,7 @@ int main(int argc, char* args[])
 				{
 					enemy_hand_sprites[i].setTexture(card_back);
 					enemy_hand_sprites[i].setRotation(0);
-					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 50);
+					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 20);
 					window.draw(enemy_hand_sprites[i]);
 				}
 				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(3)->get_hand_size() - 1))) / 2;//ai 3
@@ -302,12 +319,13 @@ int main(int argc, char* args[])
 				if (game.get_turn() == 0)
 					turn_text.setString("Your turn"); 
 				else if (game.get_turn() == 1)
-					turn_text.setString("Computer 1 turn");
+					turn_text.setString("Computer 1");
 				else if (game.get_turn() == 2)
-					turn_text.setString("Computer 2 turn");
+					turn_text.setString("Computer 2");
 				else if (game.get_turn() == 3)
-					turn_text.setString("Computer 3 turn");
+					turn_text.setString("Computer 3");
 				window.draw(turn_text);
+				
 
 				if (game.get_player(game.get_turn())->is_ai()) //logic for ai
 				{
@@ -386,6 +404,9 @@ int main(int argc, char* args[])
 				}
 				else //logic for human player
 				{
+					//display play button
+					window.draw(play_rect);
+					window.draw(play_message);
 					if (!game.get_player(0)->get_hand()->at(0).is_selected())
 					{
 						game.get_current_player()->handle_card_click(0);
@@ -403,13 +424,34 @@ int main(int argc, char* args[])
 						case sf::Event::MouseButtonPressed:
 							if (event.mouseButton.button == sf::Mouse::Left)
 							{
-								
+								if (play_button.handle_event(&event))
+								{
+									int combo_type;
+									combo_type = game.play_cards(); //check validity and play cards if valid
+
+									if (combo_type == -1)
+									{
+										std::cout << "Invalid play\n";
+										continue;
+									}
+									else
+									{
+										std::cout << "Combination " << combo_type << " was played\n";
+									}
+
+									//set card type
+									game.set_card_type((Combination)combo_type);
+									//increment turn
+									game.increment_turn();
+									playing_state = CONTINUE_ROUND;
+									card_sound.play();
+								}
 								for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
 								{
 									if (i == game.get_player(0)->get_hand_size() - 1)
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
 									else
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
 									if (player_card_buttons[i].handle_event(&event))
 									{
 										if (i == 0)
@@ -535,7 +577,7 @@ int main(int argc, char* args[])
 				{
 					player_hand_sprites[i].setTexture(card_sheet);
 					player_hand_sprites[i].setTextureRect(sf::IntRect((game.get_player(0)->get_hand()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_player(0)->get_hand()->at(i).get_suit()) * 126, 90, 126));
-					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
+					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
 					window.draw(player_hand_sprites[i]);
 				}
 				//display cards for the computers
@@ -552,7 +594,7 @@ int main(int argc, char* args[])
 				{
 					enemy_hand_sprites[i].setTexture(card_back);
 					enemy_hand_sprites[i].setRotation(0);
-					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 50);
+					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 20);
 					window.draw(enemy_hand_sprites[i]);
 				}
 				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(3)->get_hand_size() - 1))) / 2;//ai 3
@@ -576,12 +618,13 @@ int main(int argc, char* args[])
 				if (game.get_turn() == 0)
 					turn_text.setString("Your turn");
 				else if (game.get_turn() == 1)
-					turn_text.setString("Computer 1 turn");
+					turn_text.setString("Computer 1");
 				else if (game.get_turn() == 2)
-					turn_text.setString("Computer 2 turn");
+					turn_text.setString("Computer 2");
 				else if (game.get_turn() == 3)
-					turn_text.setString("Computer 3 turn");
+					turn_text.setString("Computer 3");
 				window.draw(turn_text);
+				
 
 				//if player already won, then pass (this means player just emptied his hand and had board control)
 				if (game.get_current_player()->already_won())
@@ -701,6 +744,9 @@ int main(int argc, char* args[])
 				}
 				else //logic for human player
 				{
+					//display play button
+					window.draw(play_rect);
+					window.draw(play_message);
 					player_hand_offset = 175 + (13 - game.get_current_player()->get_hand_size()) * 15;
 
 					while (window.pollEvent(event))
@@ -715,12 +761,43 @@ int main(int argc, char* args[])
 						case sf::Event::MouseButtonPressed:
 							if (event.mouseButton.button == sf::Mouse::Left)
 							{
+								if (play_button.handle_event(&event))
+								{
+									int combo_type;
+									combo_type = game.play_cards(); //check validity and play cards if valid
+
+									if (combo_type == -1)
+									{
+										std::cout << "Invalid play\n";
+										continue;
+									}
+									else
+									{
+										std::cout << "Combination " << combo_type << " was played\n";
+									}
+
+									//set card type
+									game.set_card_type((Combination)combo_type);
+
+									//if no cards left, mark player as won
+									if (game.get_current_player()->get_hand_size() == 0)
+									{
+										std::cout << "Player " << game.get_turn() << " won!";
+										game.add_winner();
+										won_players++;
+									}
+
+									//increment turn
+									game.increment_turn();
+									playing_state = CONTINUE_ROUND;
+									card_sound.play();
+								}
 								for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
 								{
 									if (i == game.get_player(0)->get_hand_size() - 1)
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
 									else
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
 									if (player_card_buttons[i].handle_event(&event))
 									{
 										//std::cout << "index " << i << " selected\n";
@@ -852,7 +929,7 @@ int main(int argc, char* args[])
 				{
 					player_hand_sprites[i].setTexture(card_sheet);
 					player_hand_sprites[i].setTextureRect(sf::IntRect((game.get_player(0)->get_hand()->at(i).get_value() - 1) * 90, game.convert_suit(game.get_player(0)->get_hand()->at(i).get_suit()) * 126, 90, 126));
-					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
+					player_hand_sprites[i].setPosition(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected());
 					window.draw(player_hand_sprites[i]);
 				}
 				//display cards for the computers
@@ -869,7 +946,7 @@ int main(int argc, char* args[])
 				{
 					enemy_hand_sprites[i].setTexture(card_back);
 					enemy_hand_sprites[i].setRotation(0);
-					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 50);
+					enemy_hand_sprites[i].setPosition(enemy_hand_offset + 20 * i, 20);
 					window.draw(enemy_hand_sprites[i]);
 				}
 				enemy_hand_offset = (600 - (90 + 20 * (game.get_player(3)->get_hand_size() - 1))) / 2;//ai 3
@@ -894,13 +971,13 @@ int main(int argc, char* args[])
 				if (game.get_turn() == 0)
 					turn_text.setString("Your turn");
 				else if (game.get_turn() == 1)
-					turn_text.setString("Computer 1 turn");
+					turn_text.setString("Computer 1");
 				else if (game.get_turn() == 2)
-					turn_text.setString("Computer 2 turn");
+					turn_text.setString("Computer 2");
 				else if (game.get_turn() == 3)
-					turn_text.setString("Computer 3 turn");
+					turn_text.setString("Computer 3");
 				window.draw(turn_text);
-
+				
 
 				//skip the player if he has already won 
 				if (game.get_current_player()->already_won())
@@ -1031,6 +1108,11 @@ int main(int argc, char* args[])
 				}
 				else //logic for human player
 				{
+					//display pass and play buttons
+					window.draw(pass_rect);
+					window.draw(play_rect);
+					window.draw(pass_message);
+					window.draw(play_message);
 
 					player_hand_offset = 175 + (13 - game.get_player(0)->get_hand_size()) * 15;
 
@@ -1046,12 +1128,59 @@ int main(int argc, char* args[])
 						case sf::Event::MouseButtonPressed:
 							if (event.mouseButton.button == sf::Mouse::Left)
 							{
+								if (pass_button.handle_event(&event))
+								{
+									std::cout << "Player " << game.get_turn() << " passed\n";
+									passed_players++;
+									game.get_current_player()->set_passed(true);
+									//deselect all cards
+									for (int i = 0; i < game.get_current_player()->get_hand()->size(); i++)
+									{
+										if (game.get_current_player()->get_hand()->at(i).is_selected())
+										{
+											game.get_current_player()->get_hand()->at(i).set_selected(false);
+										}
+									}
+									game.increment_turn();
+									std::cout << passed_players << " player(s) have passed\n";
+								}
+								else if (play_button.handle_event(&event))
+								{
+									int combo_type;
+									combo_type = game.play_cards(); //check validity and play cards if valid
+
+									if (combo_type == -1)
+									{
+										std::cout << "Invalid play\n";
+										continue;
+									}
+									else
+									{
+										std::cout << "Combination " << combo_type << " was played\n";
+									}
+
+									//set card type
+									game.set_card_type((Combination)combo_type);
+
+									//if no cards left, mark player as won
+									if (game.get_current_player()->get_hand_size() == 0)
+									{
+										std::cout << "Player " << game.get_turn() << " won!";
+										game.add_winner();
+										won_players++;
+									}
+
+									//increment turn
+									game.increment_turn();
+									playing_state = CONTINUE_ROUND;
+									card_sound.play();
+								}
 								for (int i = 0; i < game.get_player(0)->get_hand_size(); i++)
 								{
 									if (i == game.get_player(0)->get_hand_size() - 1)
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 90, 126);
 									else
-										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 424 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
+										player_card_buttons[i].set_trigger_box(player_hand_offset + 30 * i, 454 - 10 * game.get_player(0)->get_hand()->at(i).is_selected(), 30, 126);
 									if (player_card_buttons[i].handle_event(&event))
 									{
 										//std::cout << "index " << i << " selected\n";
