@@ -17,8 +17,7 @@ int Game::init_game()
 	//initialize the 3 ai
 	for (int i = 0; i < 3; i++)
 	{
-		//Player ai(false);
-		Player ai(true);	//TODO change back to ai
+		Player ai(true);
 		players.push_back(ai);
 	}
 
@@ -35,13 +34,6 @@ Deck* Game::get_deck()
 {
 	return &deck;
 }
-
-/*
-std::vector<Player> Game::get_player_list()
-{
-	return players;
-}
-*/
 
 Player* Game::get_current_player()
 {
@@ -102,13 +94,6 @@ int Game::play_cards()
 	//push cards to playing buffer
 	get_current_player()->push_selected_cards_to_buffer();
 
-	/*
-	for (int i = 0; i < get_current_player()->get_playing_buffer()->size(); i++)
-	{
-		get_current_player()->get_playing_buffer()->at(i).print_card();
-	}
-	*/
-
 	Card* temp;
 	//check validity of cards
 	if ((combo_type == NONE || combo_type == STRAIGHT) && (temp = checker.check_straight(get_current_player()->get_playing_buffer())) != NULL)
@@ -154,7 +139,6 @@ int Game::play_cards()
 
 int Game::ai_select_and_play_cards()
 {
-	std::cout << "ai select cards...combo type = " << combo_type << "\n";
 	//select of cards if possible and push them to buffer and play them
 	if ((combo_type == NONE || combo_type == STRAIGHT) && checker.ai_select_straight(get_current_player()->get_hand()) != NULL)
 	{
@@ -235,7 +219,6 @@ int Game::ai_select_and_play_cards()
 
 int Game::ai_select_and_play_cards_turn1()
 {
-	std::cout << "ai select cards...combo type = " << combo_type << "\n";
 	//select of cards if possible and push them to buffer and play them
 	if ((combo_type == NONE || combo_type == STRAIGHT) && checker.ai_select_straight_turn1(get_current_player()->get_hand()) != NULL)
 	{

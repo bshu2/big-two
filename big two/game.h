@@ -16,12 +16,11 @@ class Game
 {
 public:
 	Game();
-	//Game(/*??*/);
 	int init_game();
 	
 	Deck* get_deck();
 	Player* get_current_player();
-	Player* get_player(int player_number);	//std::vector<Player> get_player_list();
+	Player* get_player(int player_number);
 	std::vector<Card>* get_played_cards();
 	int get_turn();
 	int get_finisher(int index);

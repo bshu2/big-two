@@ -68,36 +68,6 @@ int Player::handle_card_click(int index)
 }
 
 /*
-int Player::select_card(int index)
-{
-	if (selected_indices.size() >= 5)
-		return -1; //return -1 if 5 cards are selected already
-	for (int i = 0; i < (int)selected_indices.size(); i++)
-	{
-		if (selected_indices[i] == index)
-		{
-			return -1; //return -1 if the card is already selected
-		}
-	}
-	selected_indices.push_back(index);
-	return 0;
-}
-
-int Player::deselect_card(int index)
-{
-	for (int i = 0; i < (int)selected_indices.size(); i++)
-	{
-		if (selected_indices[i] == index)
-		{
-			selected_indices.erase(selected_indices.begin() + i);
-			return 0;
-		}
-	}
-	return -1;//return -1 if the card is already not selected
-}
-*/
-
-/*
 Moves selected cards to the playing_buffer
 */
 void Player::push_selected_cards_to_buffer()
@@ -108,20 +78,13 @@ void Player::push_selected_cards_to_buffer()
 	for (int i = 0; i < (int)player_hand.size() + offset; i++)
 	{
 		index = i - offset;
-		//std::cout << "size = " << player_hand.size() << " ";
-		//std::cout << "i = " << i << " ";
-		//std::cout << "offset = " << offset << " ";
-		//std::cout << "i - offset = " << i - offset << " ";
-		//player_hand[i - offset].print_card();
 		if (player_hand[index].is_selected())//deselect card and move it to playing_buffer if it is selected
 		{
-			//std::cout << "sel";
 			player_hand[index].set_selected(false);
 			playing_buffer.push_back(player_hand[index]);
 			player_hand.erase(player_hand.begin() + index);
 			offset++;
 		}
-		//std::cout << "\n";
 	}
 }
 
@@ -206,9 +169,5 @@ int Player::close_player()
 	{
 		playing_buffer.pop_back();
 	}
-	/*while (selected_indices.size() > 0)
-	{
-		selected_indices.pop_back();
-	}*/
 	return 0;
 }

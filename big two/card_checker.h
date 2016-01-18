@@ -11,8 +11,6 @@ class CardChecker
 public:
 	CardChecker();
 
-	void sort_by_suit(std::vector<Card>* cards);
-	//int sort_by_value(std::vector<Card> cards);
 	void sort_by_value_and_suit(std::vector<Card>* cards);
 
 	//combination checking functions

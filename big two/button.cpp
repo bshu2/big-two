@@ -26,19 +26,6 @@ bool Button::handle_event(sf::Event *e)
 		}
 	}
 	return false;
-
-	/*switch (e->type)
-	{
-	case sf::Event::MouseButtonPressed:
-	//perform an action if mouse left clicks inside box
-	if (e->mouseButton.button == sf::Mouse::Left && trigger_box.contains(e->mouseButton.x, e->mouseButton.y))
-	{
-	return true;
-	}
-	break;
-	default:
-	break;
-	}*/
 }
 
 void Button::set_trigger_box(int x, int y, int width, int height)

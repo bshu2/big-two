@@ -16,8 +16,6 @@ enum PlayingState { PREPARE_GAME, START_FIRST_ROUND, START_ROUND, CONTINUE_ROUND
 
 int main(int argc, char* args[])
 {
-
-
 	Game game;
 	GameState game_state = START_SCREEN;
 	PlayingState playing_state = PREPARE_GAME;
@@ -222,10 +220,6 @@ int main(int argc, char* args[])
 	while (window.isOpen())
 	{
 		window.clear();//clear screen
-		
-		
-
-
 
 		switch (game_state)
 		{
@@ -381,26 +375,6 @@ int main(int argc, char* args[])
 							break;
 						}
 					}
-
-					/*//TODO ai stuff
-					std::cout << "\nPlayer " << game.get_turn() << " starts first\n";
-					std::cout << "START_FIRST_ROUND\n";
-					game.print_playing_field();
-					game.get_current_player()->print_hand();
-
-					int pause;
-
-					if (game.ai_select_and_play_cards() == -1)
-					{
-						std::cout << "no playable cards?? BUG";
-						std::cin >> pause;
-					}
-					
-					game.increment_turn();
-					playing_state = CONTINUE_ROUND;
-
-					std::cout << "\nPause\n";
-					std::cin >> pause;*/
 				}
 				else //logic for human player
 				{
@@ -456,13 +430,11 @@ int main(int argc, char* args[])
 									{
 										if (i == 0)
 										{
-											//game.get_current_player()->handle_card_click(0);
 											std::cout << "Cannot deselect the 3 of clubs\n";
 											continue;
 										}
 										else
 										{
-											//std::cout << "index " << i << " selected\n";
 											game.get_current_player()->handle_card_click(i);
 										}
 									}
@@ -504,64 +476,7 @@ int main(int argc, char* args[])
 						default:
 							break;
 						}
-					}
-
-					/*while (awaiting_input)
-					{
-						int action;
-
-
-						std::cout << "\nPlayer " << game.get_turn() << " starts first\n";
-						game.print_playing_field();
-						game.get_current_player()->print_hand();
-						game.get_current_player()->print_selected();
-						
-						std::cout << "Enter 0 to select/deselect a card, 2 to play cards:";
-						std::cin >> action;
-
-						if (action == 0 )//player clicks on card
-						{
-							int selected_index;
-							std::cout << "Enter index of card to select:";
-							std::cin >> selected_index;
-							if (selected_index == 0)
-							{
-								std::cout << "Cannot deselect the 3 of clubs\n";
-								continue;
-							}
-							
-							//add to selected
-							game.get_current_player()->handle_card_click(selected_index);
-							
-						}
-						else if (action == 2)//player plays cards
-						{
-							int combo_type;
-							combo_type = game.play_cards(); //check validity and play cards if valid
-
-							if (combo_type == -1)
-							{
-								std::cout << "Invalid play\n";
-								continue;
-							}
-							else
-							{
-								std::cout << "Combination " << combo_type << " was played\n";
-							}
-
-							//set card type
-							game.set_card_type((Combination)combo_type);
-							//increment turn
-							game.increment_turn();
-
-							awaiting_input = 0;
-							break;
-						}
-						
-					}*/
-					
-					
-					
+					}					
 				}
 				
 				window.display();
@@ -708,39 +623,6 @@ int main(int argc, char* args[])
 							break;
 						}
 					}
-
-
-					/*std::cout << "\nPlayer " << game.get_turn() << "'s turn\n";
-					std::cout << "START_ROUND\n";
-					game.print_playing_field();
-					game.get_current_player()->print_hand();
-
-					int pause;
-
-					if (game.ai_select_and_play_cards() == -1)
-					{
-						std::cout << "no playable cards?? BUG";
-						std::cin >> pause;
-					}
-					//if no cards left, mark player as won
-					if (game.get_current_player()->get_hand_size() == 0)
-					{
-						std::cout << "Player " << game.get_turn() << " won!";
-						game.add_winner();
-						won_players++;
-					}
-					game.increment_turn();
-					playing_state = CONTINUE_ROUND;
-					if (passed_players + won_players >= 3)
-					{
-						playing_state = END_ROUND;
-					}
-					if (won_players == 4)
-					{
-						playing_state = END_PLAY;
-					}
-					std::cout << "\nPause\n";
-					std::cin >> pause;*/
 				}
 				else //logic for human player
 				{
@@ -851,66 +733,6 @@ int main(int argc, char* args[])
 							break;
 						}
 					}
-					
-					
-					
-					/*int awaiting_input = 1;
-					while (awaiting_input)
-					{
-						int action;
-
-						std::cout << "\nPlayer " << game.get_turn() << "'s turn\n";
-						game.print_playing_field();
-						game.get_current_player()->print_hand();
-						game.get_current_player()->print_selected();
-
-						std::cout << "Enter 0 to select/deselect a card, 2 to play cards:";
-						std::cin >> action;
-
-						if (action == 0 )//player clicks on card
-						{
-							int selected_index;
-							std::cout << "Enter index of card to select:";
-							std::cin >> selected_index;
-
-							//add to selected
-							game.get_current_player()->handle_card_click(selected_index);
-
-						}
-						else if (action == 2)//player plays cards
-						{
-							int combo_type;
-							combo_type = game.play_cards(); //check validity and play cards if valid
-
-							if (combo_type == -1)
-							{
-								std::cout << "Invalid play\n";
-								continue;
-							}
-							else
-							{
-								std::cout << "Combination " << combo_type << " was played\n";
-							}
-
-							//if no cards left, mark player as won
-							if (game.get_current_player()->get_hand_size() == 0)
-							{
-								std::cout << "Player " << game.get_turn() << " won!";
-								game.add_winner();
-								won_players++;
-							}
-
-							//set card type
-							game.set_card_type((Combination)combo_type);
-							//increment turn
-							game.increment_turn();
-
-							awaiting_input = 0;
-							break;
-						}
-
-					}*/
-					
 				}
 				if (passed_players >= 3)
 				{
@@ -1070,41 +892,6 @@ int main(int argc, char* args[])
 							break;
 						}
 					}
-
-
-					/*std::cout << "\nPlayer " << game.get_turn() << "'s turn\n";
-					std::cout << "CONTINUE_ROUND\n";
-					game.print_playing_field();
-					game.get_current_player()->print_hand();
-
-					int pause;
-					if (game.ai_select_and_play_cards() == -1)
-					{
-						std::cout << "Player " << game.get_turn() << " passed\n";
-						passed_players++;
-						game.get_current_player()->set_passed(true);
-						std::cout << passed_players << " player(s) have passed\n";
-						//pass if cant play anything
-					}
-					//if no cards left, mark player as won
-					if (game.get_current_player()->get_hand_size() == 0)
-					{
-						std::cout << "Player " << game.get_turn() << " won!";
-						game.add_winner();
-						won_players++;
-					}
-					game.increment_turn();
-					playing_state = CONTINUE_ROUND;
-					if (passed_players + won_players >= 3)
-					{
-						playing_state = END_ROUND;
-					}
-					if (won_players == 4)
-					{
-						playing_state = END_PLAY;
-					}					
-					std::cout << "\nPause\n";
-					std::cin >> pause;*/
 				}
 				else //logic for human player
 				{
@@ -1249,76 +1036,6 @@ int main(int argc, char* args[])
 							break;
 						}
 					}
-
-					/*int awaiting_input = 1;
-					while (awaiting_input)
-					{
-						int action;
-
-						std::cout << "\nPlayer " << game.get_turn() << "'s turn\n";
-						game.print_playing_field();
-						game.get_current_player()->print_hand();
-						game.get_current_player()->print_selected();
-
-						std::cout << "Enter 0 to select/deselect a card, 1 to pass, 2 to play cards:";
-						std::cin >> action;
-
-						if (action == 0 )//player clicks on card
-						{
-							int selected_index;
-							std::cout << "Enter index of card to select:";
-							std::cin >> selected_index;
-
-							//add to selected
-							game.get_current_player()->handle_card_click(selected_index);
-						}
-						else if (action == 1)//player_passes
-						{
-							std::cout << "Player " << game.get_turn() << " passed\n";
-							passed_players++;
-							game.get_current_player()->set_passed(true);
-							awaiting_input = 0;
-							game.increment_turn();
-							std::cout << passed_players << " player(s) have passed\n";
-							break;
-						}
-
-						else if (action == 2)//player plays cards
-						{
-							int combo_type;
-							combo_type = game.play_cards(); //check validity and play cards if valid
-							if (combo_type == -1)
-							{
-								std::cout << "Invalid play\n";
-								continue;
-							}
-							else
-							{
-								std::cout << "Combination " << combo_type << " was played\n";
-							}
-
-							//if no cards left, mark player as won
-							if (game.get_current_player()->get_hand_size() == 0)
-							{
-								std::cout << "Player " << game.get_turn() << " won!";
-								game.add_winner();
-								won_players++;
-							}
-
-							//set card type
-							game.set_card_type((Combination)combo_type);
-							//increment turn
-							game.increment_turn();
-
-							awaiting_input = 0;
-							
-
-							break;
-						}
-
-					}
-					playing_state = CONTINUE_ROUND;*/
-
 				}
 				
 				if (passed_players >= 3)
@@ -1437,6 +1154,7 @@ int main(int argc, char* args[])
 
 			break;
 		case EXIT:
+			end_screen_music.stop();
 			game.close_game();
 			window.close();
 

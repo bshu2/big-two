@@ -8,30 +8,6 @@ CardChecker::CardChecker()
 	top_card = Card(0,3);
 }
 
-void CardChecker::sort_by_suit(std::vector<Card>* cards)
-{
-	//TODO
-}
-
-/*	//possibly not needed at all
-int CardChecker::sort_by_value(std::vector<Card> cards)
-{
-	int j;
-	Card temp;
-	for (int i = 0; i < cards.size(); i++)
-	{
-		j = i;
-		while (j > 0 && cards[j].get_comparable_value() < cards[j - 1].get_comparable_value())
-		{
-			temp = cards[j];
-			cards[j] = cards[j - 1];
-			cards[j - 1] = temp;
-			j--;
-		}
-	}
-}
-*/
-
 void CardChecker::sort_by_value_and_suit(std::vector<Card>* cards)
 {
 	int j;
@@ -143,19 +119,10 @@ Card* CardChecker::check_pair(std::vector<Card>* cards)
 
 Card* CardChecker::check_single(std::vector<Card>* cards)
 {
-	//std::cout << "single\n";
-	//std::cout << "card = " << cards->at(0).get_comparable_value() << " of " << cards->at(0).get_suit();
-
 	if (cards->size() != 1)
-	{
-		std::cout << "size test for single failed with size " << cards->size() << "\n";
 		return NULL;
-	}
 	if (top_card > cards->at(0))
-	{
-		std::cout << "comparison test for single failed";
 		return NULL;
-	}
 	top_card = cards->at(0);
 	return &cards->at(0);
 }
@@ -191,8 +158,6 @@ Card* CardChecker::ai_select_full_house(std::vector<Card>* cards)
 
 Card* CardChecker::ai_select_straight(std::vector<Card>* cards)
 {
-	//return NULL;
-	//TODO straight logic
 	if (cards->size() < 5)
 		return NULL;
 	sort_by_value_and_suit(cards);
@@ -350,15 +315,8 @@ Card* CardChecker::ai_select_pair(std::vector<Card>* cards)
 
 Card* CardChecker::ai_select_single(std::vector<Card>* cards)
 {
-	std::cout << "starting ai select single...\n";
 	if (cards->size() < 1)
-	{
-		std::cout << "size test failed with size " << cards->size() << "\n";
 		return NULL;
-	}
-	std::cout << "top card = ";
-	top_card.print_card();
-	std::cout << "\n";
 	sort_by_value_and_suit(cards);
 	for (int i = 0; i < (int)cards->size(); i++)
 	{
@@ -376,7 +334,7 @@ Card* CardChecker::ai_select_single(std::vector<Card>* cards)
 
 Card* CardChecker::ai_select_full_house_turn1_type1(std::vector<Card>* cards)//333XX
 {
-	//code below accounts for 333XX but not XXX33
+	//accounts for 333XX but not XXX33
 	if (cards->size() < 5)
 		return NULL;
 	sort_by_value_and_suit(cards);
@@ -406,7 +364,7 @@ Card* CardChecker::ai_select_full_house_turn1_type1(std::vector<Card>* cards)//3
 
 Card* CardChecker::ai_select_full_house_turn1_type2(std::vector<Card>* cards)//XXX33
 {
-	//TODO code below accounts for XXX33 but not 333XX
+	//accounts for XXX33 but not 333XX
 	if (cards->size() < 5)
 		return NULL;
 	sort_by_value_and_suit(cards);

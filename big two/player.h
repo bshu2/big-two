@@ -14,12 +14,10 @@ public:
 	Player(std::vector<Card> hand, bool ai);
 
 	int get_hand_size();
-	std::vector<Card>* get_hand();	//Hand* get_hand();
+	std::vector<Card>* get_hand();
 	std::vector<Card>* get_playing_buffer();
 	Card* get_card(int index);
 	int handle_card_click(int index);
-	//int select_card(int index);
-	//int deselect_card(int index);
 
 	void push_selected_cards_to_buffer();
 	void undo_playing_buffer();
@@ -38,8 +36,7 @@ public:
 	int close_player();
 
 private:
-	std::vector<Card> player_hand;	//Hand* player_hand;
-	//std::vector<int> selected_indices;
+	std::vector<Card> player_hand;
 	std::vector<Card> playing_buffer;
 	int cards_selected;
 	bool ai;
